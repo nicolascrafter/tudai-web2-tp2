@@ -4,7 +4,7 @@ class CategoriesModel
     private $db;
     function __construct()
     {
-        $this->db = new PDO('mysql:host=localhost;dbname=tudai-web2-tp2;charset=utf8', 'root', '');
+        $this->db = new PDO('mysql:host=localhost;dbname=tudai-web2-tp1;charset=utf8', 'root', '');
     }
 
     public function GetCategories(string $order = "id", string $sort = "asc", int $page = 1, int $size = 100)

@@ -88,9 +88,25 @@ class CategoriesApiController
         }
     }
 
-    public function getCategoryById($params)
+    public function getCategoryById($params = null)
     {
-        echo "Una sola categoria<br>";
+        $count = intval($this->model->GetCount()->count);
+        if(isset($params[':ID'])) {  
+            if(is_numeric($params[":ID"]) && intval($params[":ID"]) >= 1 && intval($params[":ID"]) <= $count) {
+                $id = $params[':ID'];
+            } else {
+                $this->status = 400;
+                $this->error->code = "InvalidID";
+                $this->error->detail = "ID No Valido";
+            }
+        }
+
+        // vista
+        if($this->status !== 200) {
+            $this->view->response($this->error, $this->status);
+        } else {
+            $this->view->response($this->model->getCategoryById($id), $this->status);
+        }
     }
 
     public function postCategory($params)
