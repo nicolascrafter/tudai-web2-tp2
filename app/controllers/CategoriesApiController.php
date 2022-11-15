@@ -1,25 +1,31 @@
 <?php
 require_once 'app/controllers/ApiController.php';
 require_once "app/models/CategoriesModel.php";
+require_once "app/models/ProductsModel.php";
 require_once "app/views/JsonView.php";
 
-class CategoriesApiController extends ApiController
+class CategoriesApiController
 {
 
     private $columns;
     private $status;
     private $error;
-    protected $model;
-    protected $view;
+    private $model;
+    private $productsModel;
+    private $view;
+    private $apiController;
+    private $maxsize;
 
     public function __construct()
     {
-        parent::__construct();
         $this->columns = array("id", "type", "brand");
         $this->status = 200;
         $this->error = new StdClass();
         $this->model = new CategoriesModel();
+        $this->productsModel = new ProductsModel();
         $this->view = new JsonView();
+        $this->apiController = new ApiController();
+        $this->maxsize = 2147483647; //usar 9223372036854775807 en produccion y compus de 64 bits
     }
 
     public function getCategories()
@@ -51,24 +57,43 @@ class CategoriesApiController extends ApiController
             }
         }
 
-        //size, valor por defecto = 100
-        $size = 100;
+        //size, valor por defecto = 0
+        $size = 0;
         if (isset($_GET["size"])) {
-            if (is_numeric($_GET["size"]) && intval($_GET["size"]) >= 1 && intval($_GET["size"]) <= 100) {
-                $size = $_GET["size"];
-            } else {
+            if (is_numeric($_GET["size"]) && intval($_GET["size"]) > $this->maxsize) {
                 $this->status = 400;
                 $this->error->code = "PageTooLarge";
                 $this->error->detail = "Pagina Muy Grande";
                 $this->error->params = new stdClass();
+                $this->error->params->minsize = 0;
                 $this->error->params->maxsize = 100;
+            } elseif (is_numeric($_GET["size"]) && intval($_GET["size"]) < 0) {
+                $this->status = 400;
+                $this->error->code = "PageTooSmall";
+                $this->error->detail = "Pagina Muy Pequeña";
+                $this->error->params = new stdClass();
+                $this->error->params->minsize = 0;
+                $this->error->params->maxsize = 100;
+            } elseif (is_numeric($_GET["size"]) && intval($_GET["size"]) >= 0 && intval($_GET["size"]) <= $this->maxsize) {
+                $size = intval($_GET["size"]);
+            } else {
+                $this->status = 400;
+                $this->error->code = "InvalidPageSize";
+                $this->error->detail = "Tamaño de pagina no valido";
+                $this->error->params = new stdClass();
+                $this->error->params->minsize = 0;
+                $this->error->params->maxsize = $this->maxsize;
             }
         }
 
         //page, valor por defecto = 1
         $page = 1;
         $count = intval($this->model->GetCount()->count);
-        $maxpage = ceil($count / $size);
+        if ($size === 0) {
+            $maxpage = 1;
+        } else {
+            $maxpage = ceil($count / $size);
+        }
         if (isset($_GET["page"])) {
             if (is_numeric($_GET["page"]) && intval($_GET["page"]) >= 1 && intval($_GET["page"]) <= $maxpage) {
 
@@ -90,49 +115,64 @@ class CategoriesApiController extends ApiController
         }
     }
 
-    public function getCategoryById($params = null)
+    public function getCategoryById($params)
     {
-        $count = intval($this->model->GetCount()->count);
-        if(isset($params[':ID'])) {  
-            if(is_numeric($params[":ID"]) && intval($params[":ID"]) >= 1 && intval($params[":ID"]) <= $count) {
-                $id = $params[':ID'];
+        if (isset($params[':ID'])) {
+            if (is_numeric($params[":ID"])) {
+                $data = $this->model->getCategoryById(intval($params[":ID"]));
+                if ($data === false) {
+                    $this->status = 404;
+                    $this->error->code = "CategoryDoesExist";
+                    $this->error->detail = "La Categoria No Existe";
+                    $this->error->params = new stdClass();
+                }
             } else {
-                $this->status = 404;
+                $this->status = 400;
                 $this->error->code = "InvalidID";
                 $this->error->detail = "ID No Valido";
+                $this->error->params = new stdClass();
             }
         }
 
         // vista
-        if($this->status !== 200) {
+        if ($this->status !== 200) {
             $this->view->response($this->error, $this->status);
         } else {
-            $this->view->response($this->model->getCategoryById($id), $this->status);
         }
     }
 
-    public function postCategory($params = [])
+    public function postCategory($params)
     {
-        if($this->getData() !== null) {
-            $data = $this->getData();
-            $id = $this->model->PostCategory($data->type, $data->brand);
-            if(isset($id)) {
-                $category = $this->model->GetCategoryById($id);
-            } else {
+        $data = $this->apiController->getData();
+        $row = false;
+        if (
+            $data !== null && !empty($data->type) && !empty($data->brand) &&
+            is_string($data->type) && is_string($data->brand) &&
+            strlen($data->type) <= 100 && strlen($data->brand) <= 100
+        ) {
+            $row = $this->model->postCategory($data->type, $data->brand);
+            if ($row === false) {
                 $this->status = 500;
-                $this->error->code = "FailedPost";
-                $this->error->detail = "Categoria no creada";
+            } else {
+                $this->status = 201;
             }
+        } else {
+            $this->status = 400;
         }
 
-        if($this->status !== 200) {
+        if ($this->status === 201) {
+            $this->view->response($row, $this->status);
+        } else if ($this->status === 400) {
+            $this->error->code = "InvalidPostData";
+            $this->error->detail = "Datos No Validos";
+            $this->error->params = new stdClass();
             $this->view->response($this->error, $this->status);
         } else {
-            $this->view->response($category, $this->status);
+            $this->error->code = "FailedPost";
+            $this->error->detail = "Categoria no creada";
+            $this->error->params = new stdClass();
+            $this->view->response($this->error, $this->status);
         }
-
-
-        echo "postCategory";
     }
 
     public function putCategory($params)
@@ -142,6 +182,32 @@ class CategoriesApiController extends ApiController
 
     public function deleteCategory($params)
     {
-        echo "deleteCategory";
+        if (is_numeric($params[":ID"])) {
+            $data = $this->model->getCategoryById(intval($params[":ID"]));
+            if ($data === false) {
+                $this->status = 404;
+                $this->error->code = "CategoryDoesNotExist";
+                $this->error->detail = "La Categoria No Existe";
+                $this->error->params = new stdClass();
+            } elseif (count($this->productsModel->getProductsByCategory(intval($params[":ID"]))) > 0) {
+                $this->status = 400;
+                $this->error->code = "ConflictingItems";
+                $this->error->detail = "Hay Productos En La Categoria";
+                $this->error->params = new stdClass();
+            } else {
+                $this->model->deleteCategory(intval($params[":ID"]));
+            }
+        } else {
+            $this->status = 400;
+            $this->error->code = "InvalidID";
+            $this->error->detail = "ID No Valido";
+            $this->error->params = new stdClass();
+        }
+
+        if ($this->status === 200) {
+            $this->view->response($data, $this->status);
+        } else {
+            $this->view->response($this->error, $this->status);
+        }
     }
 }

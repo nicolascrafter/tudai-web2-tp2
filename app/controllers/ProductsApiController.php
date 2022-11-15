@@ -11,6 +11,7 @@ class ProductsApiController {
     private $model;
     private $categories_model;
     private $view;
+    private $maxsize;
 
     public function __construct()
     {
@@ -20,6 +21,7 @@ class ProductsApiController {
         $this->model = new ProductsModel();
         $this->categories_model = new CategoriesModel();
         $this->view = new JsonView();
+        $this->maxsize = 2147483647; //usar 9223372036854775807 en produccion y compus de 64 bits
     }
 
     public function getProducts()
@@ -51,24 +53,43 @@ class ProductsApiController {
             }
         }
 
-        //size, valor por defecto = 100
-        $size = 100;
+        //size, valor por defecto = 0
+        $size = 0;
         if (isset($_GET["size"])) {
-            if (is_numeric($_GET["size"]) && intval($_GET["size"]) >= 1 && intval($_GET["size"]) <= 100) {
-                $size = $_GET["size"];
-            } else {
+            if (is_numeric($_GET["size"]) && intval($_GET["size"]) > $this->maxsize) {
                 $this->status = 400;
                 $this->error->code = "PageTooLarge";
                 $this->error->detail = "Pagina Muy Grande";
                 $this->error->params = new stdClass();
+                $this->error->params->minsize = 0;
                 $this->error->params->maxsize = 100;
+            } elseif(is_numeric($_GET["size"]) && intval($_GET["size"]) < 0) {
+                $this->status = 400;
+                $this->error->code = "PageTooSmall";
+                $this->error->detail = "Pagina Muy Pequeña";
+                $this->error->params = new stdClass();
+                $this->error->params->minsize = 0;
+                $this->error->params->maxsize = 100;
+            } elseif (is_numeric($_GET["size"]) && intval($_GET["size"]) >= 0 && intval($_GET["size"]) <= $this->maxsize) {
+                $size = intval($_GET["size"]);
+            } else {
+                $this->status = 400;
+                $this->error->code = "InvalidPageSize";
+                $this->error->detail = "Tamaño de pagina no valido";
+                $this->error->params = new stdClass();
+                $this->error->params->minsize = 0;
+                $this->error->params->maxsize = $this->maxsize;
             }
         }
 
         //page, valor por defecto = 1
         $page = 1;
         $count = intval($this->model->GetCount()->count);
-        $maxpage = ceil($count / $size);
+        if ($size === 0) {
+            $maxpage = 1;
+        } else {
+            $maxpage = ceil($count / $size);
+        }
         if (isset($_GET["page"])) {
             if (is_numeric($_GET["page"]) && intval($_GET["page"]) >= 1 && intval($_GET["page"]) <= $maxpage) {
 
@@ -134,39 +155,43 @@ class ProductsApiController {
             }
         }
 
-        //size, valor por defecto = 100
-        $size = 100;
+        //size, valor por defecto = 0
+        $size = 0;
         if (isset($_GET["size"])) {
-            if (is_numeric($_GET["size"]) && intval($_GET["size"]) > 100) {
+            if (is_numeric($_GET["size"]) && intval($_GET["size"]) > $this->maxsize) {
                 $this->status = 400;
                 $this->error->code = "PageTooLarge";
                 $this->error->detail = "Pagina Muy Grande";
                 $this->error->params = new stdClass();
-                $this->error->params->minsize = 1;
+                $this->error->params->minsize = 0;
                 $this->error->params->maxsize = 100;
-            } elseif(is_numeric($_GET["size"]) && intval($_GET["size"]) < 1) {
+            } elseif(is_numeric($_GET["size"]) && intval($_GET["size"]) < 0) {
                 $this->status = 400;
                 $this->error->code = "PageTooSmall";
                 $this->error->detail = "Pagina Muy Pequeña";
                 $this->error->params = new stdClass();
-                $this->error->params->minsize = 1;
+                $this->error->params->minsize = 0;
                 $this->error->params->maxsize = 100;
-            } elseif (is_numeric($_GET["size"]) && intval($_GET["size"]) >= 1 && intval($_GET["size"]) <= 100) {
-                $size = $_GET["size"];
+            } elseif (is_numeric($_GET["size"]) && intval($_GET["size"]) >= 0 && intval($_GET["size"]) <= $this->maxsize) {
+                $size = intval($_GET["size"]);
             } else {
                 $this->status = 400;
                 $this->error->code = "InvalidPageSize";
                 $this->error->detail = "Tamaño de pagina no valido";
                 $this->error->params = new stdClass();
-                $this->error->params->minsize = 1;
-                $this->error->params->maxsize = 100;
+                $this->error->params->minsize = 0;
+                $this->error->params->maxsize = $this->maxsize;
             }
         }
 
         //page, valor por defecto = 1
         $page = 1;
         $count = intval($this->model->GetCount()->count);
-        $maxpage = ceil($count / $size);
+        if ($size === 0) {
+            $maxpage = 1;
+        } else {
+            $maxpage = ceil($count / $size);
+        }
         if (isset($_GET["page"])) {
             if (is_numeric($_GET["page"]) && intval($_GET["page"]) >= 1 && intval($_GET["page"]) <= $maxpage) {
 
@@ -200,6 +225,27 @@ class ProductsApiController {
 
     public function deleteProduct($params)
     {
-        echo "deleteProduct";
+        if (is_numeric($params[":ID"])) {
+            $data = $this->model->GetProductById(intval($params[":ID"]));
+            if ($data === false) {
+                $this->status = 404;
+                $this->error->code = "CategoryDoesNotExist";
+                $this->error->detail = "La Categoria No Existe";
+                $this->error->params = new stdClass();
+            } else {
+                $this->model->DeleteProduct(intval($params[":ID"]));
+            }
+        } else {
+            $this->status = 400;
+            $this->error->code = "InvalidID";
+            $this->error->detail = "ID No Valido";
+            $this->error->params = new stdClass();
+        }
+
+        if ($this->status === 200) {
+            $this->view->response($data, $this->status);
+        } else {
+            $this->view->response($this->error, $this->status);
+        }
     }
 }

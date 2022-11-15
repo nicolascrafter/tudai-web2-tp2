@@ -19,4 +19,4 @@ $router->addRoute('products', 'POST', 'ProductsApiController', 'postProduct');
 $router->addRoute('products/:ID', 'PUT', 'ProductsApiController', 'putProduct');
 $router->addRoute('products/:ID', 'DELETE', 'ProductsApiController', 'deleteProduct');
 
-$router->route($_GET["resource"], $_SERVER['REQUEST_METHOD']);
+$router->route(mb_strtolower($_GET["resource"]), $_SERVER['REQUEST_METHOD']);

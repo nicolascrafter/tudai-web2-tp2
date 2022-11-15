@@ -1,21 +1,10 @@
 <?php
 
-abstract class ApiController {
-
-    protected $model;
-    protected $view;
-
-    private $data;
-
-    public function __construct()
-    {
-        $this->view = new JsonView();
-        $this->data = file_get_contents('php://input');
-    }
+class ApiController {
 
     public function getData() 
     {
-        return json_decode($this->data);
+        return json_decode(file_get_contents('php://input'));
     }
 
 }
