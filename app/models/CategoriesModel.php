@@ -48,4 +48,11 @@ class CategoriesModel
         $sentence->execute(array());
         return $sentence->fetch(PDO::FETCH_OBJ);
     }
+
+    public function PostCategory($tipo, $marca)
+    {
+        $sentence = $this->db->prepare("INSERT INTO `categories`(`type`, `brand`) VALUES (?,?)");
+        $sentence->execute(array($tipo, $marca));
+        return $this->db->lastInsertId();
+    }
 }

@@ -1,18 +1,20 @@
 <?php
+require_once 'app/controllers/ApiController.php';
 require_once "app/models/CategoriesModel.php";
 require_once "app/views/JsonView.php";
 
-class CategoriesApiController
+class CategoriesApiController extends ApiController
 {
 
     private $columns;
     private $status;
     private $error;
-    private $model;
-    private $view;
+    protected $model;
+    protected $view;
 
     public function __construct()
     {
+        parent::__construct();
         $this->columns = array("id", "type", "brand");
         $this->status = 200;
         $this->error = new StdClass();
@@ -95,7 +97,7 @@ class CategoriesApiController
             if(is_numeric($params[":ID"]) && intval($params[":ID"]) >= 1 && intval($params[":ID"]) <= $count) {
                 $id = $params[':ID'];
             } else {
-                $this->status = 400;
+                $this->status = 404;
                 $this->error->code = "InvalidID";
                 $this->error->detail = "ID No Valido";
             }
@@ -109,8 +111,27 @@ class CategoriesApiController
         }
     }
 
-    public function postCategory($params)
+    public function postCategory($params = [])
     {
+        if($this->getData() !== null) {
+            $data = $this->getData();
+            $id = $this->model->PostCategory($data->type, $data->brand);
+            if(isset($id)) {
+                $category = $this->model->GetCategoryById($id);
+            } else {
+                $this->status = 500;
+                $this->error->code = "FailedPost";
+                $this->error->detail = "Categoria no creada";
+            }
+        }
+
+        if($this->status !== 200) {
+            $this->view->response($this->error, $this->status);
+        } else {
+            $this->view->response($category, $this->status);
+        }
+
+
         echo "postCategory";
     }
 
