@@ -69,10 +69,12 @@ class CategoriesModel
         return $sentence->fetch(PDO::FETCH_OBJ);
     }
 
-    public function PostCategory(string $tipo, string $marca)
+    public function PostCategory(string $type, string $brand)
     {
-        $sentence = $this->db->prepare("INSERT INTO `categories`(`type`, `brand`) VALUES (?,?)");
-        $sentence->execute(array($tipo, $marca));
+        $sentence = $this->db->prepare("INSERT INTO `categories`(`type`, `brand`) VALUES (:type,:brand)");
+        $sentence->bindParam(":type", $type, PDO::PARAM_STR);
+        $sentence->bindParam(":brand", $brand, PDO::PARAM_STR);
+        $sentence->execute();
         $id = $this->db->lastInsertId();
         if (isset($id)) {
             return $this->GetCategoryById(intval($id));
@@ -80,7 +82,18 @@ class CategoriesModel
         return false;
     }
 
-    //put
+    public function PutCategory(int $id, string $type, string $brand)
+    {
+        $sentence = $this->db->prepare("UPDATE `categories` SET `type`=:type,`brand`=:brand WHERE id=:id");
+        $sentence->bindParam(":id", $id, PDO::PARAM_STR);
+        $sentence->bindParam(":type", $type, PDO::PARAM_STR);
+        $sentence->bindParam(":brand", $brand, PDO::PARAM_STR);
+        $sentence->execute();
+        if (isset($id)) {
+            return $this->GetCategoryById(intval($id));
+        }
+        return false;
+    }
 
     public function DeleteCategory(int $id)
     {

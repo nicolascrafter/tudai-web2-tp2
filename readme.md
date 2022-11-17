@@ -1,1 +1,1 @@
-La documentacion esta en [/docs](/docs)
+La documentacion esta en [/docs](/docs/index.md)
