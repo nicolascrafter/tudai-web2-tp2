@@ -7,26 +7,22 @@
 ----
 
 ## Documentacion
-Contenidos
-- [tudai-web2-tp2](#tudai-web2-tp2)
-  - [Importar la base de datos](#importar-la-base-de-datos)
-  - [Documentacion](#documentacion)
-    - [Categorias](#categorias)
-      - [GET](#get)
-      - [GET por id](#get-por-id)
-      - [POST](#post)
-      - [PUT](#put)
-      - [DELETE](#delete)
-    - [Productos](#productos)
-      - [GET](#get-1)
-      - [GET por id](#get-por-id-1)
-      - [GET por categoria](#get-por-categoria)
-      - [POST](#post-1)
-      - [PUT](#put-1)
-      - [DELETE](#delete-1)
-    - [Ordenamiento y paginado](#ordenamiento-y-paginado)
-      - [Ordenamiento](#ordenamiento)
-      - [Paginado](#paginado)
+- [Categorias](#categorias)
+  - [GET](#get)
+  - [GET por id](#get-por-id)
+  - [POST](#post)
+  - [PUT](#put)
+  - [DELETE](#delete)
+- [Productos](#productos)
+  - [GET](#get-1)
+  - [GET por id](#get-por-id-1)
+  - [GET por categoria](#get-por-categoria)
+  - [POST](#post-1)
+  - [PUT](#put-1)
+  - [DELETE](#delete-1)
+- [Ordenamiento y paginado](#ordenamiento-y-paginado)
+  - [Ordenamiento](#ordenamiento)
+  - [Paginado](#paginado)
 
 ### Categorias
 Aca se agrupan todos endpoint asociados al recurso categorias
