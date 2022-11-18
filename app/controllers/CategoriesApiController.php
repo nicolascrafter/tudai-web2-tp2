@@ -122,7 +122,7 @@ class CategoriesApiController
                 $data = $this->model->getCategoryById(intval($params[":ID"]));
                 if ($data === false) {
                     $this->status = 404;
-                    $this->error->code = "CategoryDoesExist";
+                    $this->error->code = "CategoryDoesNotExist";
                     $this->error->detail = "La categoria no existe";
                     $this->error->params = new stdClass();
                 }
@@ -195,7 +195,7 @@ class CategoriesApiController
         } elseif (is_numeric($params[":ID"]) && $this->model->getCategoryById(intval($params[":ID"])) === false) {
             $this->status = 400;
             $this->error->code = "CategoryDoesNotExist";
-            $this->error->detail = "El producto no existe";
+            $this->error->detail = "La categoria no existe";
             $this->error->params = new stdClass();
         } elseif (!is_numeric($params[":ID"])) {
             $this->status = 400;

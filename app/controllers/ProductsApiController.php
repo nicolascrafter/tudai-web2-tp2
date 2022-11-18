@@ -144,13 +144,15 @@ class ProductsApiController
     public function getProductsByCategory($params)
     {
         //validacion de id
-        var_dump($this->categories_model->GetCategoryById(intval($params[":ID"])));
-        if (is_numeric($params[":ID"]) && $this->categories_model->GetCategoryById(intval($params[":ID"])) !== false) {
-        } else {
-            $status = 400;
+        if (!is_numeric($params[":ID"])) {
             $this->status = 400;
-            $this->error->code = "InvalidCategory";
-            $this->error->detail = "Categoria no valida";
+            $this->error->code = "InvalidID";
+            $this->error->detail = "ID no valido";
+            $this->error->params = new stdClass();
+        } elseif (is_numeric($params[":ID"]) && $this->categories_model->GetCategoryById(intval($params[":ID"])) === false) {
+            $this->status = 404;
+            $this->error->code = "CategoryDoesNotExist";
+            $this->error->detail = "La categoria no existe";
             $this->error->params = new stdClass();
         }
 
