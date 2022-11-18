@@ -546,7 +546,7 @@ Responses:
 
     | Campo  | Descripcion          | Tipo   | Valor                       |
     | ------ | -------------------- | ------ | --------------------------- |
-    | code   | Codigo de error      | string | ```ProductDoesNotExist```      |
+    | code   | Codigo de error      | string | ```ProductDoesNotExist```   |
     | detail | Detalle del error    | string | ```El producto no existe``` |
     | params | Parametros del error | object | ```{}```                    |
 
@@ -631,7 +631,7 @@ Responses:
 
     | Campo  | Descripcion          | Tipo   | Valor                       |
     | ------ | -------------------- | ------ | --------------------------- |
-    | code   | Codigo de error      | string | ```ProductDoesNotExist```      |
+    | code   | Codigo de error      | string | ```ProductDoesNotExist```   |
     | detail | Detalle del error    | string | ```El producto no existe``` |
     | params | Parametros del error | object | ```{}```                    |
 
@@ -738,7 +738,7 @@ Responses:
 
     | Campo  | Descripcion          | Tipo   | Valor                       |
     | ------ | -------------------- | ------ | --------------------------- |
-    | code   | Codigo de error      | string | ```ProductDoesNotExist```      |
+    | code   | Codigo de error      | string | ```ProductDoesNotExist```   |
     | detail | Detalle del error    | string | ```El producto no existe``` |
     | params | Parametros del error | object | ```{}```                    |
 
@@ -840,7 +840,7 @@ Responses:
 
     | Campo  | Descripcion          | Tipo   | Valor                       |
     | ------ | -------------------- | ------ | --------------------------- |
-    | code   | Codigo de error      | string | ```ProductDoesNotExist```      |
+    | code   | Codigo de error      | string | ```ProductDoesNotExist```   |
     | detail | Detalle del error    | string | ```El producto no existe``` |
     | params | Parametros del error | object | ```{}```                    |
 
@@ -877,7 +877,7 @@ Responses:
 
     | Campo  | Descripcion          | Tipo   | Valor                       |
     | ------ | -------------------- | ------ | --------------------------- |
-    | code   | Codigo de error      | string | ```ProductDoesNotExist```      |
+    | code   | Codigo de error      | string | ```ProductDoesNotExist```   |
     | detail | Detalle del error    | string | ```El producto no existe``` |
     | params | Parametros del error | object | ```{}```                    |
 
@@ -959,7 +959,7 @@ Responses:
 
     | Campo  | Descripcion          | Tipo   | Valor                       |
     | ------ | -------------------- | ------ | --------------------------- |
-    | code   | Codigo de error      | string | ```ProductDoesNotExist```      |
+    | code   | Codigo de error      | string | ```ProductDoesNotExist```   |
     | detail | Detalle del error    | string | ```El producto no existe``` |
     | params | Parametros del error | object | ```{}```                    |
 
@@ -1073,6 +1073,30 @@ Responses:
                 "id",
                 "type",
                 "brand"
+            ]
+        }
+    }
+    ```
+
+    * :red_circle: 400
+
+    Es recibida cuando el modo para ordenar en ```sort``` no es valido
+
+    | Campo        | Descripcion                                        | Tipo          | Valor                   |
+    | ------------ | -------------------------------------------------- | ------------- | ----------------------- |
+    | code         | Codigo de error                                    | string        | ```InvalidColumn```     |
+    | detail       | Detalle del error                                  | string        | ```Columna no valida``` |
+    | params       | Parametros del error                               | object        | ```{...}```             |
+    | params.sorts | Columnas por las que se puede ordenar este recurso | array[string] | ```[...,...]```         |
+
+    ```json
+    {
+        "code": "InvalidSort",
+        "detail": "Sort no valido",
+        "params": {
+            "sorts": [
+                "asc",
+                "desc"
             ]
         }
     }
